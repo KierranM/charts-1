@@ -228,7 +228,7 @@ spec:
         - name: bootstrap-config
           mountPath: "/bootstrap/"
       {{- end }}
-      {{- if .Values.artifactory.loggingConfig }}
+      {{- if .Values.artifactory.debugLogging }}
         - name: logging-config
           mountPath: "/opt/jfrog/artifactory/etc/logback.xml"
           subPath: logback.xml
@@ -310,7 +310,7 @@ spec:
         configMap:
           name: {{ template "artifactory-ha.fullname" . }}-replicator-config
       {{- end }}
-      {{- if .Values.artifactory.logginConfig }}
+      {{- if .Values.artifactory.debugLogging }}
       - name: logging-config
         configMap:
           name: {{ template "artifactory-ha.fullname" . }}-logging-config

@@ -114,6 +114,8 @@ artifactory:
     # version:
     pullPolicy: IfNotPresent
 
+  debugLogging: false
+
   ## Add custom init containers
   customInitContainers: |
   #  - name: "custom-setup"
