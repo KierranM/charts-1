@@ -143,6 +143,7 @@ database:
   port:
   ## Please make sure these are created under the provided database
   name: mission_control
+  autoSeed: false
   jfisSchema: insight_server
   jfmcSchema: jfmc_server
   jfscSchema: insight_scheduler

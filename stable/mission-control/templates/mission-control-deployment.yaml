@@ -85,10 +85,11 @@ spec:
         - name: mongodb-setup
           mountPath: "/scripts"
     {{- end }}
-    {{- if .Values.postgresql.enabled }}
+    {{- if or .Values.postgresql.enabled (and (eq .Values.database.type "postgresql") .Values.database.autoSeed) }}
       - name: postgresql-setup
         image: "{{ .Values.dbSetup.postgresql.image.repository }}:{{ .Values.dbSetup.postgresql.image.tag }}"
         env:
+        {{- if .Values.postgresql.enabled }}
         - name: DB_PORT
           value: '{{ .Values.postgresql.service.port }}'
         - name: DB_HOST
@@ -140,6 +141,55 @@ spec:
             secretKeyRef:
               name: {{ template "mission-control.fullname" . }}-postgresql-cred
               key: jfisPassword
+        {{- else }}
+        - name: DB_PORT
+          value: '{{ .Values.database.port }}'
+        - name: DB_HOST
+          value: '{{ .Values.database.host }}'
+        - name: DB_NAME
+          value: '{{ .Values.database.name }}'
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-db-cred
+              key: dbPassword
+        - name: JFMC_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-db-cred
+              key: jfmcPassword
+        - name: JFMC_DB_USERNAME
+          value: '{{ .Values.database.jfmcUsername }}'
+        - name: JFMC_DB_SCHEMA
+          value: '{{ .Values.database.jfmcSchema }}'
+        - name: JFEX_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-db-cred
+              key: jfexPassword
+        - name: JFEX_DB_USERNAME
+          value: '{{ .Values.database.jfexUsername }}'
+        - name: JFEX_DB_SCHEMA
+          value: '{{ .Values.database.jfexSchema }}'
+        - name: JFSC_DB_USERNAME
+          value: '{{ .Values.database.jfscUsername }}'
+        - name: JFSC_DB_SCHEMA
+          value: '{{ .Values.database.jfscSchema }}'
+        - name: JFSC_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-db-cred
+              key: jfscPassword
+        - name: JFIS_DB_USERNAME
+          value: '{{ .Values.database.jfisUsername }}'
+        - name: JFIS_DB_SCHEMA
+          value: '{{ .Values.database.jfisSchema }}'
+        - name: JFIS_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ template "mission-control.fullname" . }}-db-cred
+              key: jfisPassword
+        {{- end }}
         command:
         - 'bash'
         - '-c'
@@ -666,7 +716,7 @@ spec:
       {{- else }}
         emptyDir: {}
       {{- end }}
-      {{- if .Values.postgresql.enabled }}
+      {{- if or .Values.postgresql.enabled (and (eq .Values.database.type "postgresql") .Values.database.autoSeed) }}
       - name: postgresql-setup
         configMap:
           name: {{ template "mission-control.fullname" . }}-postgresql-setup-script

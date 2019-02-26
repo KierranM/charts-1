@@ -1,4 +1,4 @@
-{{- if .Values.postgresql.enabled }}
+{{- if or .Values.postgresql.enabled (and (eq .Values.database.type "postgresql") .Values.database.autoSeed) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -155,10 +155,13 @@ data:
         SERVICE=all
     fi
 
-    DB_HOST={{ .Release.Name }}-postgresql
     [[ -z "${POSTGRES_PATH}" ]] && PSQL=psql || PSQL=${POSTGRES_PATH}/psql
+    {{- if .Values.postgresql.enabled }}
+    DB_HOST={{ .Release.Name }}-postgresql
     POSTGRES_OPTIONS="--host=${DB_HOST} --port=${DB_PORT} -U {{ .Values.postgresql.postgresUsername }} -w"
-
+    {{- else }}
+    POSTGRES_OPTIONS="--host=${DB_HOST} --port=${DB_PORT} -U {{ .Values.database.user }} -w"
+    {{- end }}
     init
     [[ $SERVICE =~ all|jfis ]] && setupDB "${JFIS_DB_USERNAME}" "${JFIS_DB_PASSWORD}" "${DB_NAME}" "${JFIS_DB_SCHEMA}" || true
     [[ $SERVICE =~ all|jfsc ]] && setupDB "${JFSC_DB_USERNAME}" "${JFSC_DB_PASSWORD}" "${DB_NAME}" "${JFSC_DB_SCHEMA}" || true
