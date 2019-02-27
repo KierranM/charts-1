@@ -39,7 +39,7 @@ data:
         [ ! -z ${pass} ] || errorExit "password is empty"
 
         ${PSQL} $POSTGRES_OPTIONS -tAc "SELECT 1 FROM pg_roles WHERE rolname='${user}'" | grep -q 1 1>/dev/null || \
-        ${PSQL} $POSTGRES_OPTIONS -c "CREATE USER ${user} WITH PASSWORD '${pass}';" 1>/dev/null || \
+        ${PSQL} $POSTGRES_OPTIONS -c "CREATE USER ${user} WITH PASSWORD '${pass}'; GRANT ${user} TO ${DB_USER};" 1>/dev/null || \
         errorExit "Failed creating user ${user} on PostgreSQL"
     }
 
@@ -52,7 +52,7 @@ data:
         [ ! -z ${user} ] || errorExit "user is empty"
 
         if ! ${PSQL} $POSTGRES_OPTIONS -lqt | cut -d \| -f 1 | grep -qw ${db} 1>/dev/null; then
-            ${PSQL} $POSTGRES_OPTIONS -c "CREATE DATABASE ${db} WITH ENCODING='UTF8' TABLESPACE=${DB_TABLESPACE} template template0;" 1>/dev/null || errorExit "Failed creating db ${db} on PostgreSQL"
+            ${PSQL} $POSTGRES_OPTIONS -c "CREATE DATABASE ${db} WITH OWNER='${user}' ENCODING='UTF8' TABLESPACE=${DB_TABLESPACE} template template0;" 1>/dev/null || errorExit "Failed creating db ${db} on PostgreSQL"
         fi
     }
 
@@ -158,9 +158,11 @@ data:
     [[ -z "${POSTGRES_PATH}" ]] && PSQL=psql || PSQL=${POSTGRES_PATH}/psql
     {{- if .Values.postgresql.enabled }}
     DB_HOST={{ .Release.Name }}-postgresql
-    POSTGRES_OPTIONS="--host=${DB_HOST} --port=${DB_PORT} -U {{ .Values.postgresql.postgresUsername }} -w"
+    DB_USER={{ .Values.postgresql.postgresUsername }}
+    POSTGRES_OPTIONS="--host=${DB_HOST} --port=${DB_PORT} -U $DB_USER --dbname=${DB_NAME} -w"
     {{- else }}
-    POSTGRES_OPTIONS="--host=${DB_HOST} --port=${DB_PORT} -U {{ .Values.database.user }} -w"
+    DB_USER="{{ .Values.database.user }}"
+    POSTGRES_OPTIONS="--host=${DB_HOST} --port=${DB_PORT} -U $DB_USER --dbname=${DB_NAME} -w"
     {{- end }}
     init
     [[ $SERVICE =~ all|jfis ]] && setupDB "${JFIS_DB_USERNAME}" "${JFIS_DB_PASSWORD}" "${DB_NAME}" "${JFIS_DB_SCHEMA}" || true

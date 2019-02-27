@@ -67,6 +67,10 @@ This can be done with the following parameters
 ```
 **NOTE:** You must set `postgresql.enabled=false` in order for the chart to use the `database.*` parameters. Without it, they will be ignored!
 
+#### Automatic Database seeding
+
+An external database can be automatically seeded by setting `database.autoSeed=true`.
+
 #### Use existing secrets for PostgreSQL connection details
 You can use already existing secrets for managing the database connection details.
 
@@ -152,6 +156,7 @@ The following table lists the configurable parameters of the mission-control cha
 | `database.type`                              | External database type (`postgresql`)           | `postgresql`                          |
 | `database.host`                              | External database Connection Host               | ` `                                   |
 | `database.port`                              | External database Connection Port               | ` `                                   |
+| `database.tablespace`                        | External Database Tablespace                    | `pg_default`                          |
 | `database.name`                              | External database name                          | `mission_control`                     |
 | `database.user`                              | External database user                          | ` `                                   |
 | `database.password`                          | External database password                      | ` `                                   |

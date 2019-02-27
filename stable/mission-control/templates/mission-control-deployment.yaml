@@ -148,6 +148,8 @@ spec:
           value: '{{ .Values.database.host }}'
         - name: DB_NAME
           value: '{{ .Values.database.name }}'
+        - name: DB_TABLESPACE
+          value: '{{ .Values.database.tablespace }}'
         - name: PGPASSWORD
           valueFrom:
             secretKeyRef:
